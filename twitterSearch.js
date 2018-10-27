@@ -1,12 +1,56 @@
 var Twitter = require('twitter');
+var fs = require('fs');
+var config = require('./config.js');
+var dbSettings = require('./dbSettings.js');
+var sqlObjects = require('./sqlObjects.js');
+var mysql = require('mysql');
 
-var client = new Twitter({
-  consumer_key: '9XAMNsAYD5N2jRiLbqLr1eWX0',
-  consumer_secret: 'QFfrnbBZRlLZnmtzlTKmJ0ms38Mdr1vtioQBfJ0E2zQ9eWHzez',
-  access_token_key: '255730707-CthpNibcuo2FPJnT39hEVKJZeMXhD1pI1hdgehcT',
-  access_token_secret: 'GtokFicAEZ29UALUyRpWRKZDgT6vmZma3tQVtMxFrKgec'
+// setting up the objects
+var client = new Twitter(config);
+var con = mysql.createConnection(dbSettings);
+var topics = ['node.js', 'MAGAbomber', ''];
+
+// db connect
+con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
 });
 
-client.get('search/tweets', {q: 'node.js'}, function(error, tweets, response) {
-   console.log(tweets);
+// function andri
+function searchTwitter(topic, maxId) {
+  const parameters = {
+    q: topic,
+    result_type:'recent',
+    count: '100'
+  };
+
+  if(maxId) {
+    parameters.max_id = maxId;
+  }
+
+  client.get('search/tweets', parameters, function(error, tweets, response) {
+    if(error) throw error;
+    var currentTweet = '';
+    var currentUser = '';
+    var currentUserId = '';
+    tweets.forEach(function(status) {
+      currentUser = status.user.screen_name;
+      currentTweet = status.text;
+      currentUserId = status.user.id;
+      var sql = `INSERT INTO tweets (topic, tweet, user) VALUES ('${topic}','${currentTweet}','${currentUser}')`;
+      con.query(sql, function(err, result) {
+        if (err) throw err;
+        console.log("1 new record inserted");
+      });
+    });
+    var maxId = tweets.max_id;
+    searchTwitter(topic, maxId);
+  }
+}
+
+// main loop to collect data
+topics.forEach(function(topic) {
+  searchTwitter(topic);
 });
+
+con.end();

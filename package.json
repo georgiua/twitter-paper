@@ -1,0 +1,24 @@
+{
+  "name": "twitter_paper",
+  "version": "1.0.0",
+  "description": "\"# twitter-paper\"",
+  "main": "twitterSearch.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/georgiua/twitter-paper.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/georgiua/twitter-paper/issues"
+  },
+  "homepage": "https://github.com/georgiua/twitter-paper#readme",
+  "dependencies": {
+    "cron": "^1.4.1",
+    "mysql": "^2.16.0",
+    "twitter": "^1.7.1"
+  }
+}
