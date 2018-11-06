@@ -23,7 +23,7 @@ function searchTwitter(topic, maxId) {
   const parameters = {
     q: topic,
     result_type:'recent',
-    count: '100'
+    count: '30'
   };
   var counter = 1;
 
@@ -33,31 +33,34 @@ function searchTwitter(topic, maxId) {
   console.log('Parameters' + parameters);
 
   client.get('search/tweets', parameters, function(error, tweets, response) {
-    if(error) throw error;
-    var currentTweet = '';
-    var currentUser = '';
-    var currentUserId = '';
-    tweets.forEach(function(status) {
-      currentUser = status.user.screen_name;
-      currentTweet = status.text;
-      currentUserId = status.user.id;
-      var sql = `INSERT INTO tweets (topic, tweet, user) VALUES ('${topic}','${currentTweet}','${currentUser}')`;
-      con.query(sql, function(err, result) {
-        if (err) throw err;
-        console.log("1 new record inserted");
+    if(error) {
+        console.log(error);
+    } else {
+      var currentTweet = '';
+      var currentUser = '';
+      var currentUserId = '';
+      tweets.statuses.forEach(function(status) {
+        currentUser = status.user.screen_name;
+        currentTweet = status.text;
+        currentUserId = status.user.id;
+        var sql = `INSERT INTO tweets (topic, tweet, user) VALUES ('${topic}','${currentTweet}','${currentUser}')`;
+        con.query(sql, function(err, result) {
+          if (err) console.log(err);
+          console.log("1 new record inserted");
+        });
       });
-    });
+    }
     var next_results = querystring.parse(tweets.search_metadata.next_results);
     maxIds[topic] = next_results.max_id;
     counter++;
-    if(counter <= 60) {
+    if(counter <= 2) {
         searchTwitter(topic, maxId);
     }
   });
 }
 
 // schedule the job
-const job = new CronJob('0 0/16 * 1/1 * * *', function() {
+const job = new CronJob('*/15 * * * *', function() {
 
   // main loop to collect data
   topics.forEach(function(topic) {
