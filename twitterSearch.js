@@ -41,7 +41,7 @@ function searchTwitter(topic, maxId) {
       var currentUserId = '';
       tweets.statuses.forEach(function(status) {
         currentUser = status.user.screen_name;
-        currentTweet = status.text;
+        currentTweet = JSON.stringify(status);
         currentUserId = status.user.id;
         var sql = `INSERT INTO tweets (topic, tweet, user) VALUES ('${topic}','${currentTweet}','${currentUser}')`;
         con.query(sql, function(err, result) {
